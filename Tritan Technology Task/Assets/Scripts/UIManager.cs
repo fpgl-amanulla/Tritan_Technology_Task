@@ -3,6 +3,7 @@ using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
@@ -11,6 +12,7 @@ public class UIManager : MonoBehaviour
 
     [SerializeField] private Button btnSpeedUp;
     [SerializeField] private Button btnSpeedDown;
+    [SerializeField] private Button btnReset;
 
     [SerializeField] private TextMeshProUGUI txtCollectableCount;
 
@@ -25,6 +27,7 @@ public class UIManager : MonoBehaviour
         else Destroy(gameObject);
 
         ScoreManager.onUpdateCollectable += UpdateResourceBar;
+        PlayerController.onChangePlayerSpeed += OnChangedPlayerSpeed;
         UpdateResourceBar(0);
     }
 
@@ -32,13 +35,32 @@ public class UIManager : MonoBehaviour
     {
         btnSpeedUp.onClick.AddListener(SpeedUp);
         btnSpeedDown.onClick.AddListener(SpeedDown);
+        btnReset.onClick.AddListener(delegate { SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex); });
+    }
+
+    private void OnDestroy()
+    {
+        ScoreManager.onUpdateCollectable -= UpdateResourceBar;
+        PlayerController.onChangePlayerSpeed -= OnChangedPlayerSpeed;
+    }
+
+    private void OnChangedPlayerSpeed(float value, Vector2 speedClamValue)
+    {
+        if (value >= speedClamValue.y)
+            btnSpeedUp.transform.GetComponentInChildren<TextMeshProUGUI>().text = "MaxSpeed";
+        else if (value <= speedClamValue.x)
+            btnSpeedDown.transform.GetComponentInChildren<TextMeshProUGUI>().text = "MinSpeed";
+        else
+        {
+            btnSpeedUp.transform.GetComponentInChildren<TextMeshProUGUI>().text = "Speed++";
+            btnSpeedDown.transform.GetComponentInChildren<TextMeshProUGUI>().text = "Speed--";
+        }
     }
 
     private void SpeedDown() => onClickSpeedBtn?.Invoke(-.5f);
 
     private void SpeedUp() => onClickSpeedBtn?.Invoke(+.5f);
 
-    private void OnDestroy() => ScoreManager.onUpdateCollectable -= UpdateResourceBar;
 
     private void UpdateResourceBar(int count)
     {

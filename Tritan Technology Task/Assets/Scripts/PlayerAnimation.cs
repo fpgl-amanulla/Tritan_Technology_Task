@@ -26,6 +26,7 @@ public class PlayerAnimation : MonoBehaviour
 
     private void OnStartWalking(bool status)
     {
+        Debug.Log(status);
         animator.SetBool(Walk, status);
     }
 }
